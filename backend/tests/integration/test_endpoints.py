@@ -251,6 +251,138 @@ class TestWorkoutEndpoints:
         assert any(w["name"] == "Cardio" for w in workouts)
 
 
+class TestWorkoutSetNormalization:
+    """Integration tests for exercise name normalization in workout set persistence."""
+
+    async def test_exercise_name_resolved_via_synonym(self, client: AsyncClient):
+        """Sending exercise_name='press de banca' resolves to Bench Press via synonym."""
+        # Create the canonical exercise
+        ex = await client.post("/exercises/", json={"name": "Bench Press"})
+        bench_id = ex.json()["id"]
+
+        # Add a Spanish synonym
+        await client.post(
+            f"/exercises/{bench_id}/synonyms",
+            json={"synonym": "press de banca"},
+        )
+
+        # Create workout and add a set using the Spanish name
+        workout = await client.post("/workouts/", json={"name": "Push Day"})
+        workout_id = workout.json()["id"]
+
+        response = await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={"exercise_name": "press de banca", "set_number": 1, "weight_kg": 80.0, "reps": 5},
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["exercise_id"] == bench_id
+        assert data["raw_name"] == "press de banca"
+
+    async def test_unknown_exercise_name_preserved_as_raw_name(self, client: AsyncClient):
+        """Sending an unrecognized exercise_name stores raw_name and leaves exercise_id null."""
+        # Create any exercise so the workout can be created
+        ex = await client.post("/exercises/", json={"name": "Squat"})
+        _ = ex.json()["id"]
+
+        workout = await client.post("/workouts/", json={"name": "Mix Day"})
+        workout_id = workout.json()["id"]
+
+        response = await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={
+                "exercise_name": "some totally unknown exercise xyz",
+                "set_number": 1,
+                "reps": 10,
+            },
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["exercise_id"] is None
+        assert data["raw_name"] == "some totally unknown exercise xyz"
+
+    async def test_exercise_id_still_works_without_exercise_name(self, client: AsyncClient):
+        """Providing exercise_id directly (no exercise_name) behaves as before."""
+        ex = await client.post("/exercises/", json={"name": "Deadlift"})
+        deadlift_id = ex.json()["id"]
+
+        workout = await client.post("/workouts/", json={"name": "Back Day"})
+        workout_id = workout.json()["id"]
+
+        response = await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={"exercise_id": deadlift_id, "set_number": 1, "weight_kg": 120.0, "reps": 3},
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["exercise_id"] == deadlift_id
+        assert data["raw_name"] is None
+
+    async def test_exercise_id_and_exercise_name_both_set(self, client: AsyncClient):
+        """When both exercise_id and exercise_name are provided, id is used and raw_name stored."""
+        ex = await client.post("/exercises/", json={"name": "Overhead Press"})
+        ohp_id = ex.json()["id"]
+
+        workout = await client.post("/workouts/", json={"name": "Shoulder Day"})
+        workout_id = workout.json()["id"]
+
+        response = await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={
+                "exercise_id": ohp_id,
+                "exercise_name": "OHP",
+                "set_number": 1,
+                "reps": 8,
+            },
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["exercise_id"] == ohp_id
+        assert data["raw_name"] == "OHP"
+
+    async def test_exercise_name_exact_match_resolved(self, client: AsyncClient):
+        """exercise_name matching an existing exercise name is resolved to its id."""
+        ex = await client.post("/exercises/", json={"name": "Pull-Up"})
+        pullup_id = ex.json()["id"]
+
+        workout = await client.post("/workouts/", json={"name": "Upper Body"})
+        workout_id = workout.json()["id"]
+
+        response = await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={"exercise_name": "Pull-Up", "set_number": 1, "reps": 12},
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["exercise_id"] == pullup_id
+        # raw_name is always stored when exercise_name is submitted (preserves user input)
+        assert data["raw_name"] == "Pull-Up"
+
+    async def test_workout_set_detail_shows_raw_name(self, client: AsyncClient):
+        """GET /workouts/{id} returns raw_name in the set details."""
+        ex = await client.post("/exercises/", json={"name": "Squat"})
+        _ = ex.json()["id"]
+
+        workout = await client.post("/workouts/", json={"name": "Leg Day"})
+        workout_id = workout.json()["id"]
+
+        await client.post(
+            f"/workouts/{workout_id}/sets",
+            json={
+                "exercise_name": "unrecognized move",
+                "set_number": 1,
+                "reps": 5,
+            },
+        )
+
+        detail = await client.get(f"/workouts/{workout_id}")
+        assert detail.status_code == 200
+        sets = detail.json()["sets"]
+        assert len(sets) == 1
+        assert sets[0]["raw_name"] == "unrecognized move"
+        assert sets[0]["exercise_id"] is None
+
+
 class TestAnalyticsEndpoints:
     async def test_analytics_summary_returns_correct_schema(self, client: AsyncClient):
         """GET /analytics/summary returns correct schema with analytics fields."""

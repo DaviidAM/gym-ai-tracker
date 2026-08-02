@@ -4,6 +4,7 @@ from sqlalchemy import select
 from app.database import get_db
 from app.schemas.workout import WorkoutCreate, WorkoutOut, WorkoutDetailOut, WorkoutSetCreate, WorkoutSetOut
 from app.models.workout import Workout, WorkoutSet
+from app.services.workout_set_service import create_workout_set
 
 router = APIRouter(prefix="/workouts", tags=["workouts"])
 
@@ -43,6 +44,7 @@ async def get_workout(workout_id: int, user_id: int = 1, db: AsyncSession = Depe
             id=s.id,
             workout_id=s.workout_id,
             exercise_id=s.exercise_id,
+            raw_name=s.raw_name,
             set_number=s.set_number,
             reps=s.reps,
             weight_kg=s.weight_kg,
@@ -71,8 +73,7 @@ async def add_workout_set(workout_id: int, set_in: WorkoutSetCreate, user_id: in
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
 
-    workout_set = WorkoutSet(workout_id=workout_id, **set_in.model_dump())
-    db.add(workout_set)
+    workout_set = await create_workout_set(session=db, workout_id=workout_id, data=set_in)
     await db.commit()
     await db.refresh(workout_set)
     return workout_set

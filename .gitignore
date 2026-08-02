@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Astro build
+dist/
+.astro/
+
+# Node
+node_modules/

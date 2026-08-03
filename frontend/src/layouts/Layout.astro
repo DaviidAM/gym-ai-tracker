@@ -33,7 +33,7 @@ const currentPath = Astro.url.pathname;
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center gap-8">
-            <a href="/dashboard" class="text-xl font-bold text-emerald-400 hover:text-emerald-300 transition">
+            <a href="/dashboard" class="text-xl font-bold text-cyan-400 hover:text-cyan-300 transition">
               💪 GymAI
             </a>
             <div class="flex gap-1">
@@ -43,7 +43,7 @@ const currentPath = Astro.url.pathname;
                   class:list={[
                     'px-4 py-2 rounded-lg text-sm font-medium transition',
                     currentPath === item.href || currentPath.startsWith(item.href + '/')
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-indigo-600 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800'
                   ]}
                 >

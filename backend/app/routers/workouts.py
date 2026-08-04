@@ -118,6 +118,34 @@ async def get_workout(workout_id: int, user_id: int = 1, db: AsyncSession = Depe
     )
 
 
+@router.get("/html/", response_class=HTMLResponse)
+async def list_workouts_html(user_id: int = 1, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Workout).where(Workout.user_id == user_id))
+    workouts = result.scalars().all()
+    if not workouts:
+        return "<p class='text-gray-400'>No workouts yet. Create your first one above!</p>"
+    html_parts = []
+    for w in workouts:
+        html_parts.append(f"""
+        <div class='bg-gray-800 border border-gray-700 rounded-lg p-4 flex items-center justify-between'>
+          <div>
+            <a href='/workouts/{w.id}' class='text-lg font-medium text-white hover:text-cyan-400 transition'>{w.name}</a>
+            <p class='text-sm text-gray-400 mt-1'>{w.notes or 'No notes'}</p>
+            <p class='text-xs text-gray-500 mt-1'>{w.created_at.strftime("%b %d, %Y")}</p>
+          </div>
+          <div class='flex gap-2'>
+            <button
+              hx-get='/workouts/{w.id}'
+              hx-target='#workout-list'
+              hx-swap='innerHTML'
+              class='px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition'
+            >View</button>
+          </div>
+        </div>
+        """)
+    return "".join(html_parts)
+
+
 @router.post("/{workout_id}/sets", response_model=WorkoutSetOut, status_code=201)
 async def add_workout_set(workout_id: int, set_in: WorkoutSetCreate, user_id: int = 1, db: AsyncSession = Depends(get_db)):
     # Verify workout exists and belongs to user

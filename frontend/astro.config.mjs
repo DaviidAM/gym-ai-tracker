@@ -9,6 +9,18 @@ export default defineConfig({
     allowedHosts: ['.trycloudflare.com', 'localhost']
   },
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        '/exercises': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+        '/workouts': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+      },
+    },
   }
 });

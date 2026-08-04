@@ -2,6 +2,30 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
+<style>
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal-content {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 32rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+</style>
+
 <Layout title="Workouts">
   <div class="space-y-6">
     <div class="flex items-center justify-between">
@@ -10,6 +34,7 @@ import Layout from '../../layouts/Layout.astro';
         hx-get="/workouts/new"
         hx-target="#modal-container"
         hx-swap="innerHTML"
+        hx-on:click="document.getElementById('modal-container').classList.add('active')"
         class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition"
       >
         + New Workout

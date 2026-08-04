@@ -19,53 +19,53 @@ async def list_workouts(user_id: int = 1, db: AsyncSession = Depends(get_db)):
 @router.get("/new", response_class=HTMLResponse)
 async def new_workout_form():
     return """
-    <div id="workout-form-container">
-      <form
-        hx-post="/workouts/"
-        hx-target="#workout-list"
-        hx-swap="innerHTML"
-        hx-on::htmx-after-request="if(event.detail.successful) { document.getElementById('modal-container').innerHTML = ''; }"
-        class="space-y-4"
-      >
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Workout Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="e.g. Push Day"
-            required
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label for="notes" class="block text-sm font-medium text-gray-300 mb-1">Notes (optional)</label>
-          <textarea
-            id="notes"
-            name="notes"
-            placeholder="Any notes about this workout..."
-            rows="3"
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
-          ></textarea>
-        </div>
-        <div class="flex gap-3 justify-end">
-          <button
-            type="button"
-            hx-get="/workouts/"
-            hx-target="#modal-container"
-            hx-swap="innerHTML"
-            class="px-4 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition"
-          >
-            Create Workout
-          </button>
-        </div>
-      </form>
+    <div class="modal-overlay active">
+      <div class="modal-content">
+        <form
+          hx-post="/workouts/"
+          hx-target="#workout-list"
+          hx-swap="innerHTML"
+          hx-on::htmx-after-request="if(event.detail.successful) { document.getElementById('modal-container').innerHTML = ''; document.getElementById('modal-container').classList.remove('active'); }"
+          class="space-y-4"
+        >
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Workout Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="e.g. Push Day"
+              required
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label for="notes" class="block text-sm font-medium text-gray-300 mb-1">Notes (optional)</label>
+            <textarea
+              id="notes"
+              name="notes"
+              placeholder="Any notes about this workout..."
+              rows="3"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
+            ></textarea>
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button
+              type="button"
+              onclick="document.getElementById('modal-container').innerHTML = ''; document.getElementById('modal-container').classList.remove('active');"
+              class="px-4 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-medium transition"
+            >
+              Create Workout
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
     """
 

@@ -10,7 +10,7 @@ import Layout from '../../layouts/Layout.astro';
         hx-get="/exercises/new"
         hx-target="#modal-container"
         hx-swap="innerHTML"
-        hx-on:click="document.getElementById('modal-container').classList.add('active')"
+        hx-on:click="if(!this.classList.contains('htmx-request')){document.getElementById('modal-container').classList.add('active')}"
         class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition"
       >
         + New Exercise
@@ -34,6 +34,9 @@ import Layout from '../../layouts/Layout.astro';
     </div>
 
     <!-- Modal Container -->
-    <div id="modal-container"></div>
+    <div
+      id="modal-container"
+      onclick="if(event.target === this){this.innerHTML = '';this.classList.remove('active')}"
+    ></div>
   </div>
 </Layout>

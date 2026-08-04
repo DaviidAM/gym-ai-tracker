@@ -141,6 +141,75 @@ async def get_frequency(
     ]
 
 
+@router.get("/summary")
+async def get_analytics_summary(user_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Return HTML summary card for the analytics page (used by HTMX)."""
+    from sqlalchemy import func, and_
+    from app.models.workout import Workout, WorkoutSet
+    from app.models.exercise import Exercise
+    from datetime import datetime, timedelta
+
+    now = datetime.utcnow()
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+
+    # Total workouts
+    total_result = await db.execute(
+        select(func.count(Workout.id)).where(Workout.user_id == user_id)
+    )
+    total_workouts = total_result.scalar() or 0
+
+    # Workouts this week
+    week_result = await db.execute(
+        select(func.count(Workout.id)).where(
+            and_(Workout.user_id == user_id, Workout.created_at >= week_ago)
+        )
+    )
+    workouts_this_week = week_result.scalar() or 0
+
+    # Total exercises
+    ex_result = await db.execute(
+        select(func.count(WorkoutSet.id))
+        .join(Workout, Workout.id == WorkoutSet.workout_id)
+        .where(Workout.user_id == user_id)
+    )
+    total_sets = ex_result.scalar() or 0
+
+    # Top muscle group
+    top_muscle_result = await db.execute(
+        select(Exercise.muscle_group, func.sum(WorkoutSet.weight_kg * WorkoutSet.reps).label("volume"))
+        .join(WorkoutSet, WorkoutSet.exercise_id == Exercise.id)
+        .join(Workout, Workout.id == WorkoutSet.workout_id)
+        .where(and_(Workout.user_id == user_id, Workout.created_at >= month_ago))
+        .group_by(Exercise.muscle_group)
+        .order_by(func.sum(WorkoutSet.weight_kg * WorkoutSet.reps).desc())
+        .limit(1)
+    )
+    top_muscle_row = top_muscle_result.first()
+    top_muscle = top_muscle_row.muscle_group.title() if top_muscle_row else "None yet"
+
+    return f"""
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-gray-800 rounded-xl p-4">
+        <div class="text-gray-400 text-sm">Total Workouts</div>
+        <div class="text-3xl font-bold text-white">{total_workouts}</div>
+      </div>
+      <div class="bg-gray-800 rounded-xl p-4">
+        <div class="text-gray-400 text-sm">This Week</div>
+        <div class="text-3xl font-bold text-cyan-400">{workouts_this_week}</div>
+      </div>
+      <div class="bg-gray-800 rounded-xl p-4">
+        <div class="text-gray-400 text-sm">Total Sets</div>
+        <div class="text-3xl font-bold text-white">{total_sets}</div>
+      </div>
+      <div class="bg-gray-800 rounded-xl p-4">
+        <div class="text-gray-400 text-sm">Top Muscle Group</div>
+        <div class="text-3xl font-bold text-indigo-400">{top_muscle}</div>
+      </div>
+    </div>
+    """
+
+
 @router.get("/exercises", response_model=list[dict])
 async def get_exercises_for_selector(user_id: int = 1, db: AsyncSession = Depends(get_db)):
     """Return exercises that have workout data for the selector dropdown."""

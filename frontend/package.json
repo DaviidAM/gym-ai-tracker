@@ -16,5 +16,8 @@
     "astro": "^7.1.6",
     "htmx": "^0.0.2",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }

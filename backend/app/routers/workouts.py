@@ -79,6 +79,30 @@ async def create_workout(workout_in: WorkoutCreate, user_id: int = 1, db: AsyncS
     return workout
 
 
+@router.get("/new")
+async def new_workout_form():
+    """Return HTML form for creating a new workout (used by HTMX modal)."""
+    return """
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-lg mx-auto">
+      <h2 class="text-xl font-semibold text-white mb-4">New Workout</h2>
+      <form hx-post="http://localhost:8000/workouts/" hx-swap="none" hx-on::htmx-after-request="document.getElementById('modal-container').innerHTML = ''; location.reload()">
+        <div class="mb-4">
+          <label class="block text-gray-400 text-sm mb-1">Workout Name</label>
+          <input type="text" name="name" required placeholder="e.g. Push Day" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-400 text-sm mb-1">Notes (optional)</label>
+          <textarea name="notes" rows="3" placeholder="Any notes..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400"></textarea>
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button type="button" hx-on:click="document.getElementById('modal-container').innerHTML = ''" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white transition">Cancel</button>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition">Create Workout</button>
+        </div>
+      </form>
+    </div>
+    """
+
+
 @router.get("/{workout_id}", response_model=WorkoutDetailOut)
 async def get_workout(workout_id: int, user_id: int = 1, db: AsyncSession = Depends(get_db)):
     result = await db.execute(

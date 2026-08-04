@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -31,3 +31,19 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(user)
     return user
+
+
+@router.post("/login")
+async def login(username: str = Form(...), password: str = Form(...), db: AsyncSession = Depends(get_db)):
+    """Simple username/password login. Returns user data on success."""
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return {"id": user.id, "username": user.username, "email": user.email}
+
+
+@router.post("/logout")
+async def logout():
+    """Logout endpoint (stateless — client discards token)."""
+    return {"message": "Logged out"}

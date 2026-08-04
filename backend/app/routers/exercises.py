@@ -16,6 +16,15 @@ async def list_exercises(db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
+@router.get("/count", response_class=HTMLResponse)
+async def exercises_count(user_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Return plain text exercise count for HTMX stat cards."""
+    from sqlalchemy import func
+    result = await db.execute(select(func.count(Exercise.id)))
+    count = result.scalar() or 0
+    return str(count)
+
+
 @router.post("/", response_model=ExerciseOut)
 async def create_exercise(exercise_in: ExerciseCreate, db: AsyncSession = Depends(get_db)):
     exercise = Exercise(**exercise_in.model_dump())

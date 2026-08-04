@@ -16,6 +16,15 @@ async def list_workouts(user_id: int = 1, db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
+@router.get("/count", response_class=HTMLResponse)
+async def workouts_count(user_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Return plain text workout count for HTMX stat cards."""
+    from sqlalchemy import func
+    result = await db.execute(select(func.count(Workout.id)).where(Workout.user_id == user_id))
+    count = result.scalar() or 0
+    return str(count)
+
+
 @router.get("/new", response_class=HTMLResponse)
 async def new_workout_form():
     return """

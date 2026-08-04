@@ -4,7 +4,8 @@ from typing import Optional
 
 
 class WorkoutSetBase(BaseModel):
-    exercise_id: int
+    exercise_id: int | None = None  # canonical id; resolved from exercise_name if not provided
+    exercise_name: str | None = None  # raw free-text name; run through normalizer when present
     set_number: int
     reps: Optional[int] = None
     weight_kg: Optional[float] = None
@@ -18,6 +19,7 @@ class WorkoutSetCreate(WorkoutSetBase):
 class WorkoutSetOut(WorkoutSetBase):
     id: int
     workout_id: int
+    raw_name: Optional[str] = None
     created_at: datetime
 
     class Config:

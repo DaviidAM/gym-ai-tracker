@@ -20,5 +20,13 @@ class ExerciseOut(ExerciseBase):
 
 
 class ExerciseSynonymCreate(BaseModel):
-    canonical_id: int
     synonym: str
+
+
+class ExerciseSynonymOut(BaseModel):
+    id: int
+    exercise_id: int
+    synonym: str
+
+    class Config:
+        from_attributes = True

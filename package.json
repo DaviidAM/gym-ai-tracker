@@ -1,0 +1,27 @@
+{
+  "name": "gym-ai-tracker",
+  "version": "1.0.0",
+  "description": "Sistema de tracking de entrenamientos con inteligencia artificial para optimizar rutinas de gimnasio.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DaviidAM/gym-ai-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DaviidAM/gym-ai-tracker/issues"
+  },
+  "homepage": "https://github.com/DaviidAM/gym-ai-tracker#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

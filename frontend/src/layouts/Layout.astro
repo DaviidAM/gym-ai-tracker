@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+
+const navItems = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/workouts', label: 'Workouts' },
+  { href: '/exercises', label: 'Exercises' },
+  { href: '/analytics', label: 'Analytics' },
+  { href: '/chat', label: 'Chat' },
+  { href: '/auth/login', label: 'Login' },
+  { href: '/auth/register', label: 'Register' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | GymAI Tracker</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+  </head>
+  <body class="bg-gray-950 text-gray-100 min-h-screen">
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-8">
+            <a href="/dashboard" class="text-xl font-bold text-cyan-400 hover:text-cyan-300 transition">
+              💪 GymAI
+            </a>
+            <div class="flex gap-1">
+              {navItems.map(item => (
+                <a
+                  href={item.href}
+                  class:list={[
+                    'px-4 py-2 rounded-lg text-sm font-medium transition',
+                    currentPath === item.href || currentPath.startsWith(item.href + '/')
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  ]}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="border-t border-gray-800 mt-16 py-6 text-center text-gray-500 text-sm">
+      <p>GymAI Tracker — Built with Astro + HTMX</p>
+    </footer>
+  </body>
+</html>

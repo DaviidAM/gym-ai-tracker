@@ -18,7 +18,8 @@ class WorkoutSet(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     workout_id = Column(Integer, ForeignKey("workouts.id"), nullable=False)
-    exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
+    exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=True)  # nullable: unknown names store raw_name instead
+    raw_name = Column(String, nullable=True)  # original free-text name when normalization was applied/failed
     set_number = Column(Integer, nullable=False)
     reps = Column(Integer, nullable=True)
     weight_kg = Column(Float, nullable=True)

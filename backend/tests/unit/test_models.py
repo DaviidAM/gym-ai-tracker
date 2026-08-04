@@ -137,13 +137,13 @@ class TestExerciseModel:
         await db_session_for_app.commit()
         await db_session_for_app.refresh(exercise)
 
-        synonym = ExerciseSynonym(canonical_id=exercise.id, synonym="BSQ")
+        synonym = ExerciseSynonym(exercise_id=exercise.id, synonym="BSQ")
         db_session_for_app.add(synonym)
         await db_session_for_app.commit()
         await db_session_for_app.refresh(synonym)
 
         assert synonym.id is not None
-        assert synonym.canonical_id == exercise.id
+        assert synonym.exercise_id == exercise.id
         assert synonym.synonym == "BSQ"
 
     async def test_synonym_unique_constraint(
@@ -155,10 +155,10 @@ class TestExerciseModel:
         await db_session_for_app.commit()
         await db_session_for_app.refresh(exercise)
 
-        db_session_for_app.add(ExerciseSynonym(canonical_id=exercise.id, synonym="DL"))
+        db_session_for_app.add(ExerciseSynonym(exercise_id=exercise.id, synonym="DL"))
         await db_session_for_app.commit()
 
-        dup = ExerciseSynonym(canonical_id=exercise.id, synonym="DL")
+        dup = ExerciseSynonym(exercise_id=exercise.id, synonym="DL")
         db_session_for_app.add(dup)
         with pytest.raises(Exception):
             await db_session_for_app.commit()

@@ -1,0 +1,113 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Register">
+  <div class="min-h-[70vh] flex items-center justify-center">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2">Create Account</h1>
+        <p class="text-gray-400">Start tracking your gym progress with AI</p>
+      </div>
+
+      <form id="register-form" class="space-y-5">
+        <div>
+          <label for="email" class="block text-gray-400 text-sm mb-2">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="you@example.com"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+          />
+        </div>
+
+        <div>
+          <label for="username" class="block text-gray-400 text-sm mb-2">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            placeholder="your_username"
+            minlength="3"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-gray-400 text-sm mb-2">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            placeholder="••••••••"
+            minlength="6"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+          />
+        </div>
+
+        <div id="register-error" class="text-red-400 text-sm hidden"></div>
+        <div id="register-success" class="text-green-400 text-sm hidden"></div>
+
+        <button
+          type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-medium transition"
+        >
+          Create Account
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-400 text-sm">
+          Already have an account?
+          <a href="/auth/login" class="text-cyan-400 hover:text-cyan-300 transition">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('register-form') as HTMLFormElement;
+  const errorDiv = document.getElementById('register-error') as HTMLDivElement;
+  const successDiv = document.getElementById('register-success') as HTMLDivElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorDiv.classList.add('hidden');
+    successDiv.classList.add('hidden');
+
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const username = (document.getElementById('username') as HTMLInputElement).value;
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+
+    try {
+      const res = await fetch('http://localhost:8000/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, password }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        errorDiv.textContent = err.detail || 'Registration failed';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      const user = await res.json();
+      successDiv.textContent = `Account created! Redirecting to login...`;
+      successDiv.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 1500);
+    } catch {
+      errorDiv.textContent = 'Network error — is the server running?';
+      errorDiv.classList.remove('hidden');
+    }
+  });
+</script>
